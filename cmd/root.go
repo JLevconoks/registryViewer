@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/JLevconoks/registryViewer/app"
 	"github.com/JLevconoks/registryViewer/registry"
 	"github.com/spf13/cobra"
-	"os"
-	"strings"
 )
 
 var rootCmd = &cobra.Command{
@@ -16,8 +17,9 @@ var rootCmd = &cobra.Command{
 }
 
 var (
-	buildVersion = ""
-	buildTime    = ""
+	buildVersion    = ""
+	buildTime       = ""
+	paginationLimit int
 )
 
 func Execute() {
@@ -29,6 +31,7 @@ func Execute() {
 
 func init() {
 	rootCmd.Version = fmt.Sprintf("%s (%s)", buildVersion, buildTime)
+	rootCmd.Flags().IntVar(&paginationLimit, "limit", 1000, "maximum number of items per request to fetch from the registry")
 }
 
 func runRootCmd(cmd *cobra.Command, args []string) {
@@ -54,7 +57,7 @@ func runRootCmd(cmd *cobra.Command, args []string) {
 	}
 	subPath = strings.TrimSuffix(subPath, "/")
 
-	registryClient := registry.NewRegistry(protocol, baseUrl, subPath)
+	registryClient := registry.NewRegistry(protocol, baseUrl, subPath, paginationLimit)
 	guiApp := app.NewApp(registryClient)
 	guiApp.Run()
 }
